@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import http from '@nuxt/http'
 import DataView from '../components/DataView.vue'
 
 export default {
@@ -47,9 +48,11 @@ export default {
     }
   },
   methods: {
-    setUrl (submitEvent) {
+    async setUrl (submitEvent) {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
+      const response = await http.get(this.url + '/api/accounts/all')
+      this.responseCode = response.responseCode
     }
   }
 }
