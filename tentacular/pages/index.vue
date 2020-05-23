@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import http from '@nuxt/http'
+import axios from 'axios'
 import DataView from '../components/DataView.vue'
 
 export default {
@@ -51,8 +51,20 @@ export default {
     async setUrl (submitEvent) {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
-      const response = await http.get(this.url + '/api/accounts/all')
-      this.responseCode = response.responseCode
+      const config = {
+        headers: {
+          Accept: 'application/json',
+          'X-NuGet-ApiKey': this.apiKey,
+          OctUrl: this.url
+        }
+      }
+      try {
+        const res = await axios.get('/api', config)
+        this.responseCode = res.data.responseCode
+        console.log(res.data)
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }

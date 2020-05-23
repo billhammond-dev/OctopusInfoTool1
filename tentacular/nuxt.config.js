@@ -62,5 +62,11 @@ export default {
     */
     extend (config, ctx) {
     }
-  }
+  },
+  serverMiddleware: [
+    {
+      path: 'api',
+      handler: '~/servermiddleware/proxy.js'
+    }
+  ]
 }
