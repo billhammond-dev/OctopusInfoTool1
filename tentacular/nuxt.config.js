@@ -28,6 +28,7 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    {src: '~/plugins/server-side-axios.js', ssr: true}
   ],
   /*
   ** Nuxt.js dev-modules

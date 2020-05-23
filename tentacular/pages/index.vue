@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import serverRequests from '../plugins/server-side-axios'
 import DataView from '../components/DataView.vue'
 
 export default {
@@ -57,12 +57,8 @@ export default {
       }
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
-      try {
-        const res = await axios.get(this.url, config)
-        this.responseCode = res.data.responseCode
-      } catch (error) {
-        console.log(error)
-      }
+      const response = await serverRequests.axiosGet(this.url, config)
+      console.log(response)
     }
   }
 }
