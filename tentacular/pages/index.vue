@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import serverRequests from '../plugins/server-side-axios'
 import DataView from '../components/DataView.vue'
 
 export default {
@@ -48,17 +47,9 @@ export default {
     }
   },
   methods: {
-    async setUrl (submitEvent) {
-      const config = {
-        headers: {
-          Accept: 'application/json',
-          'X-NuGet-ApiKey': this.apiKey
-        }
-      }
+    setUrl (submitEvent) {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
-      const response = await serverRequests.axiosGet(this.url, config)
-      console.log(response)
     }
   }
 }
