@@ -55,7 +55,7 @@ export default {
         headers: {
           Accept: 'application/json',
           'X-NuGet-ApiKey': this.apiKey,
-          OctUrl: this.url
+          OctUrl: `${this.url}/api/serverstatus/health`
         }
       }
       try {
