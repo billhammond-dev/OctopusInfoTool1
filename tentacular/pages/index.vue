@@ -7,20 +7,34 @@
     <form @submit.prevent="setUrl">
       <input class="urlinput" type="text" v-model="url" name="url" placeholder="Octopus Server Url">
       <input class="apiinput" type="password" v-model="apiKey" name="apiKey" placeholder="Api Key">
+      <input
+        class="sslcheckbox"
+        type="checkbox"
+        id="sslcheck"
+        v-model="sslCheck"
+        value="true">
+      <label class="sslcheck" for="sslcheck">Verify SSL</label>
       <input class="connect" type="submit" value="connect">
-      <span class="resp_code">Last Response Code: {{ $store.state.data.responseCode }}</span>
+      <span class="resp_code">Last Response: {{ $store.state.data.responseCode }}-{{selectedProject}}</span>
     </form>
   </div>
   <div class="selection_area">
     <div class="selector">
-      <select class="dropdown" name="add_name">
+      <select v-if="$store.state.data.allProjects" v-model="selectedProject" @click="getProjects" class="dropdown">
         <option>Select A Project:</option>
-        <option value="value1">option1</option>
-        <option value="value2">option2</option>
+        <option
+          v-for="(item,key) in $store.state.data.allProjects"
+          :key="key"
+          :value="item.Id">
+          {{item.Name}}
+        </option>
       </select>
+      <span v-else @click="getProjects" class="dropdown">
+        Select A Project:
+      </span>
     </div>
     <div class="selector">
-      <select class="dropdown" name="add_name">
+      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" @click="getReleaseSteps" class="dropdown" >
         <option>Select Release Step:</option>
         <option value="value1">option1</option>
         <option value="value2">option2</option>
@@ -43,18 +57,25 @@ export default {
   data () {
     return {
       url: '',
-      apiKey: ''
+      apiKey: '',
+      sslCheck: true,
+      selectedProject: 'Select A Project:',
+      selectedStep: 'Select Release Step:'
     }
   },
+  created () {
+    // later
+    this.$store.commit('data/SET_CODE', '')
+    this.$store.commit('data/SET_PROJECTS', undefined)
+  },
   methods: {
-    async setUrl (submitEvent) {
-      this.url = submitEvent.target.elements.url.value
-      this.apiKey = submitEvent.target.elements.apiKey.value
+    async getData (apiEndpoint) {
       const config = {
         headers: {
           Accept: 'application/json',
           'X-NuGet-ApiKey': this.apiKey,
-          OctUrl: `${this.url}/api/serverstatus/health`
+          OctUrl: `${this.url}/${apiEndpoint}`,
+          verifySSL: this.sslCheck
         }
       }
       try {
@@ -66,13 +87,25 @@ export default {
           this.$store.commit('data/SET_CODE', res.data.status)
         }
         console.log('sent axios request to backend')
-        console.log(res.data.data)
-        console.log(res.data.status)
+        return res.data.data
       } catch (error) {
         this.$store.commit('data/SET_CODE', 'Error')
       }
+    },
+    setUrl (submitEvent) {
+      this.url = submitEvent.target.elements.url.value
+      this.apiKey = submitEvent.target.elements.apiKey.value
+      this.getData('api/serverstatus/health')
+    },
+    async getProjects () {
+      this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
+      console.log(this.$store.state.data.allProjects)
+    },
+    async getReleaseSteps () {
+      // test
     }
   }
+
 }
 </script>
 <style>
@@ -112,9 +145,23 @@ export default {
   border: none;
   outline: none;
   border-bottom: 2px solid #dcdde1;
-  width: 35rem;
+  width: 25rem;
   color: #dcdde17c;
   padding-bottom: .25rem;
+}
+
+.url_input_area .sslcheck {
+  font-size: 1rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #dcdde17c;
+}
+
+.url_input_area .sslcheckbox {
+  margin-left: .5rem;
+  width: .75rem;
+  height: .75rem;
 }
 
 .url_input_area .apiinput {
@@ -124,7 +171,7 @@ export default {
   outline: none;
   border: 1px solid #dcdde136;
   border-radius: .5rem;
-  width: 25rem;
+  width: 18rem;
   color: #dcdde17c;
   padding: .25rem;
 }

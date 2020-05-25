@@ -6,8 +6,9 @@ export default {
   path: '/api',
   handler (req, res) {
     //const stuff = JSON.stringify(req.headers)
+    var verifySSL = (req.headers['verifyssl'] === 'true')
     const agent = new https.Agent({  
-      rejectUnauthorized: false
+      rejectUnauthorized: verifySSL
      });
     const config = {
       headers: {
@@ -23,10 +24,54 @@ export default {
       res.end(JSON.stringify({data: response['data'], status: response.status + ' ' + response.statusText}))
     })
     .catch(function (error) {
-      // handle error
-      console.log(error.response.status)
-      console.log(error.response.data)
-      res.end(JSON.stringify({data: '', status: error.response.status + ' ' + error.response.data.ErrorMessage}))
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data)
+        console.log(error.response.status)
+        console.log(error.response.headers)
+        res.end(JSON.stringify({data: '', status: error.response.status + ' ' + error.response.data.ErrorMessage}))
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log('Request Error')
+        console.log(error)
+        res.end(JSON.stringify({data: '', status: 'Request ' + error}))
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Config Error')
+        console.log(error.message)
+        res.end(JSON.stringify({data: '', status: 'Error ' + error.message}))
+      }
     })
   }
 }
+
+/* error keys for axios
+[                                                                                                             07:51:48
+  'code',
+  'config',
+  'request',
+  'response',
+  'isAxiosError',
+  'toJSON'
+]
+
+Request Error                                                                                                 07:53:23
+[                                                                                                             07:53:23
+  '_writableState',
+  'writable',
+  '_events',
+  '_eventsCount',
+  '_maxListeners',
+  '_options',
+  '_redirectCount',
+  '_redirects',
+  '_requestBodyLength',
+  '_requestBodyBuffers',
+  '_onNativeResponse',
+  '_currentRequest',
+  '_currentUrl'
+]
+*/

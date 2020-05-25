@@ -1,9 +1,13 @@
 export const state = () => ({
-  responseCode: ''
+  responseCode: '',
+  allProjects: []
 })
 
 export const mutations = {
   SET_CODE (state, code) {
     state.responseCode = code
+  },
+  SET_PROJECTS (state, projects) {
+    state.allProjects = projects
   }
 }
