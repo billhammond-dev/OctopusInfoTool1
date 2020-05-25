@@ -8,7 +8,7 @@
       <input class="urlinput" type="text" v-model="url" name="url" placeholder="Octopus Server Url">
       <input class="apiinput" type="password" v-model="apiKey" name="apiKey" placeholder="Api Key">
       <input class="connect" type="submit" value="connect">
-      <span class="resp_code">Last Response Code: {{reponseCode}}</span>
+      <span class="resp_code">Last Response Code: {{ $store.state.data.responseCode }}</span>
     </form>
   </div>
   <div class="selection_area">
@@ -27,7 +27,7 @@
       </select>
     </div>
   </div>
-  <div class="dvpane"><DataView octopusData="{name1: Test1}"/></div>
+  <div class="dvpane"><DataView /></div>
   </div>
 </template>
 
@@ -42,7 +42,6 @@ export default {
   },
   data () {
     return {
-      responseCode: '',
       url: '',
       apiKey: ''
     }
@@ -60,10 +59,17 @@ export default {
       }
       try {
         const res = await axios.get('/api', config)
-        this.responseCode = res.data.responseCode
-        console.log(res.data)
+        // axios wont handle errors using a custom http agent so doing some here
+        if (res.data.data === undefined) {
+          this.$store.commit('data/SET_CODE', 'Error')
+        } else {
+          this.$store.commit('data/SET_CODE', res.data.status)
+        }
+        console.log('sent axios request to backend')
+        console.log(res.data.data)
+        console.log(res.data.status)
       } catch (error) {
-        console.log(error)
+        this.$store.commit('data/SET_CODE', 'Error')
       }
     }
   }
