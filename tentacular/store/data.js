@@ -1,6 +1,7 @@
 export const state = () => ({
   responseCode: '',
-  allProjects: []
+  allProjects: [],
+  projectSteps: []
 })
 
 export const mutations = {
@@ -9,5 +10,8 @@ export const mutations = {
   },
   SET_PROJECTS (state, projects) {
     state.allProjects = projects
+  },
+  SET_STEPS (state, steps) {
+    state.projectSteps = steps
   }
 }

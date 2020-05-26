@@ -15,12 +15,12 @@
         value="true">
       <label class="sslcheck" for="sslcheck">Verify SSL</label>
       <input class="connect" type="submit" value="connect">
-      <span class="resp_code">Last Response: {{ $store.state.data.responseCode }}-{{selectedProject}}</span>
+      <span class="resp_code">Last Response: {{ $store.state.data.responseCode }}</span>
     </form>
   </div>
   <div class="selection_area">
     <div class="selector">
-      <select v-if="$store.state.data.allProjects" v-model="selectedProject" @click="getProjects" class="dropdown">
+      <select v-if="$store.state.data.allProjects" v-model="selectedProject" @change="getProjectSteps" class="dropdown">
         <option>Select A Project:</option>
         <option
           v-for="(item,key) in $store.state.data.allProjects"
@@ -34,14 +34,21 @@
       </span>
     </div>
     <div class="selector">
-      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" @click="getReleaseSteps" class="dropdown" >
-        <option>Select Release Step:</option>
-        <option value="value1">option1</option>
-        <option value="value2">option2</option>
+      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" class="dropdown" >
+        <option>Release Step:</option>
+        <option
+          v-for="(item,key) in $store.state.data.projectSteps"
+          :key="key"
+          :value="item">
+          {{item}}
+        </option>
       </select>
+      <span v-else class="dropdown">
+        Release Step:
+      </span>
     </div>
   </div>
-  <div class="dvpane"><DataView /></div>
+  <div class="dvpane"><DataView :octopusData="displayData" /></div>
   </div>
 </template>
 
@@ -60,13 +67,15 @@ export default {
       apiKey: '',
       sslCheck: true,
       selectedProject: 'Select A Project:',
-      selectedStep: 'Select Release Step:'
+      selectedStep: 'Release Step:',
+      displayData: { test: 'test1output', test2: 'test2output' }
     }
   },
   created () {
     // later
     this.$store.commit('data/SET_CODE', '')
     this.$store.commit('data/SET_PROJECTS', undefined)
+    this.$store.commit('data/SET_STEPS', undefined)
   },
   methods: {
     async getData (apiEndpoint) {
@@ -87,6 +96,7 @@ export default {
           this.$store.commit('data/SET_CODE', res.data.status)
         }
         console.log('sent axios request to backend')
+        console.log(config.headers.OctUrl)
         return res.data.data
       } catch (error) {
         this.$store.commit('data/SET_CODE', 'Error')
@@ -99,10 +109,43 @@ export default {
     },
     async getProjects () {
       this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
-      console.log(this.$store.state.data.allProjects)
     },
-    async getReleaseSteps () {
-      // test
+    async getLastProjectDeployment () {
+      try {
+        // gets latest deployment process from a project
+        // regex to get rid a a bug where spaces cause an issue
+        const lastDep = await this.getData('api/deployments?projects=' + this.selectedProject.replace(/\s+/g, ''))
+        const depDetails = await this.getData('api/deploymentprocesses/' + lastDep.Items[0].DeploymentProcessId)
+        return depDetails
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getProjectSteps () {
+      try {
+        this.selectedStep = 'Release Step:'
+        const depDetails = await this.getLastProjectDeployment()
+        const stepList = []
+        let stepNum = 0
+        let step
+        for (step of depDetails.Steps) {
+          stepNum++
+          let action
+          let substepNum = 0
+          for (action of step.Actions) {
+            if (step.Actions.length > 1) {
+              substepNum++
+              stepList.push(stepNum + '.' + substepNum + ' ' + action.Name)
+            } else {
+              stepList.push(stepNum + ' ' + action.Name)
+            }
+          }
+        }
+        console.log(stepList)
+        this.$store.commit('data/SET_STEPS', stepList)
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 

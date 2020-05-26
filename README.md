@@ -12,6 +12,7 @@ When release step selected then run query for data pane
 
 https://github.com/OctopusDeploy/OctopusDeploy-Api/wiki
 
+Thinking best way to do this might be a live display based on a store item linked to selected project/step
 
 HOW TO GET ALL STEPS??
 
@@ -34,5 +35,12 @@ OK grab all tasks for a given project, sort out the pagination as well and just 
 {TaskID1: {stepName: {data}}, TaskId2: {stepName: {data}}} which will be in order of latest to last by default
 Then on step selection you could loop over this store showing only entries from the selected STEP
 
+_1. When project is selected also grab ALL taks IDs for that project and store in store
+1. Get Latest Deployments for a Project
+2. List out tasks and subtasks in Order for the dropdown
+3. Then when step is selected:
+  a. For each task in task ID store for given project pull entire task log and save in store list as above which will also be in historicval order anyway
+  b. Display then based on selected step matching exactly data in the store
 
+So here when you make a subtask the primary task no longer matters and only the subtask is counted.
 
