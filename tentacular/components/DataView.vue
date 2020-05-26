@@ -1,6 +1,6 @@
 <template>
   <div class="pane">
-    {{octopusData}}
+    <span v-for="line in octopusData" :key="line.key">{{ line }}<br></span>
   </div>
 </template>
 
@@ -8,7 +8,7 @@
 export default {
   name: 'DataView',
   props: {
-    octopusData: Object
+    octopusData: Array
   }
 }
 </script>

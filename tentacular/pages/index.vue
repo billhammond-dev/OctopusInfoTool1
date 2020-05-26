@@ -48,7 +48,7 @@
       </span>
     </div>
   </div>
-  <div class="dvpane"><DataView :octopusData="displayData" /></div>
+  <div class="dvpane"><DataView :octopusData="taskData" /></div>
   </div>
 </template>
 
@@ -69,6 +69,15 @@ export default {
       selectedProject: 'Select A Project:',
       selectedStep: 'Release Step:',
       displayData: { test: 'test1output', test2: 'test2output' }
+    }
+  },
+  computed: {
+    taskData () {
+      if (this.selectedStep === 'Release Step:') {
+        return this.$store.state.data.projectTasks
+      } else {
+        return 'No task data yet'
+      }
     }
   },
   created () {
@@ -102,6 +111,9 @@ export default {
         this.$store.commit('data/SET_CODE', 'Error')
       }
     },
+    getDataPaginated (apiEndpoint) {
+      // idea here is to set up a loop to get all pages for a paginated endpoint and return it
+    },
     setUrl (submitEvent) {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
@@ -109,6 +121,22 @@ export default {
     },
     async getProjects () {
       this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
+    },
+    async getTasks () {
+      const taskListRaw = await this.getData('api/tasks/?project=' + this.selectedProject.replace(/\s+/g, ''))
+      console.log(taskListRaw)
+      const taskList = []
+      let task
+      for (task of taskListRaw.Items) {
+        const taskLine = []
+        taskLine[0] = task.Id
+        taskLine[1] = task.Description
+        taskLine[2] = task.State
+        taskLine[3] = task.Completed
+        taskList.push(taskLine)
+      }
+      this.$store.commit('data/SET_TASKS', taskList)
+      // console.log(this.$store.state.data.projectTasks)
     },
     async getLastProjectDeployment () {
       try {
@@ -135,14 +163,15 @@ export default {
           for (action of step.Actions) {
             if (step.Actions.length > 1) {
               substepNum++
-              stepList.push(stepNum + '.' + substepNum + ' ' + action.Name)
+              stepList.push(stepNum + '.' + substepNum + ' - ' + action.Name)
             } else {
-              stepList.push(stepNum + ' ' + action.Name)
+              stepList.push(stepNum + ' - ' + action.Name)
             }
           }
         }
         console.log(stepList)
         this.$store.commit('data/SET_STEPS', stepList)
+        await this.getTasks()
       } catch (error) {
         console.log(error)
       }
