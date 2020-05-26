@@ -111,9 +111,6 @@ export default {
         this.$store.commit('data/SET_CODE', 'Error')
       }
     },
-    getDataPaginated (apiEndpoint) {
-      // idea here is to set up a loop to get all pages for a paginated endpoint and return it
-    },
     setUrl (submitEvent) {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
@@ -123,18 +120,29 @@ export default {
       this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
     },
     async getTasks () {
-      const taskListRaw = await this.getData('api/tasks/?project=' + this.selectedProject.replace(/\s+/g, ''))
-      console.log(taskListRaw)
+      // paginated obv
       const taskList = []
-      let task
-      for (task of taskListRaw.Items) {
-        const taskLine = []
-        taskLine[0] = task.Id
-        taskLine[1] = task.Description
-        taskLine[2] = task.State
-        taskLine[3] = task.Completed
-        taskList.push(taskLine)
+      let getNext = true
+      let pagedUrl = 'api/tasks/?project=' + this.selectedProject.replace(/\s+/g, '')
+      do {
+        const taskListRaw = await this.getData(pagedUrl)
+        console.log(taskListRaw)
+        let task
+        for (task of taskListRaw.Items) {
+          const taskLine = []
+          taskLine[0] = task.Id
+          taskLine[1] = task.Description
+          taskLine[2] = task.State
+          taskLine[3] = task.Completed
+          taskList.push(taskLine)
+          if (!taskListRaw.Links['Page.Next']) {
+            getNext = false
+          } else {
+            pagedUrl = taskListRaw.Links['Page.Next']
+          }
+        }
       }
+      while (getNext === true)
       this.$store.commit('data/SET_TASKS', taskList)
       // console.log(this.$store.state.data.projectTasks)
     },
@@ -174,6 +182,19 @@ export default {
         await this.getTasks()
       } catch (error) {
         console.log(error)
+      }
+    },
+    async getStepHistory () {
+      // idea here is to use the store of tasks and grab all details needed from each task detail output and create a line with it
+      const stepTasks = []
+      let taskLine
+      for (taskLine of this.$store.state.data.projectTasks) {
+        const stepLine = []
+        const taskId = taskLine[0]
+        const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
+        console.log(stepTasks)
+        console.log(stepLine)
+        console.log(taskDetail)
       }
     }
   }
