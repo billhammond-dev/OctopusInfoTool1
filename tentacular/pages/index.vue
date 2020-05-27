@@ -192,6 +192,7 @@ export default {
         const stepLine = []
         const taskId = taskLine[0]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
+        
         console.log(stepTasks)
         console.log(stepLine)
         console.log(taskDetail)

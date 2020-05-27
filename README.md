@@ -8,7 +8,10 @@ When release step selected then run query for data pane
 
 https://github.com/OctopusDeploy/OctopusDeploy-Api/wiki
 
-1. When project is selected need to add a fn to also pull and store ALL project tasks (paginated!!)
+
+Top level in task detail is 'ActivityLogs'[]
+Then any step will have ActivityLogs[n].Name = 'Step X:' 
+Substeps exist if exists ActivityLogs[n].Name contains 'Step...' and then Children[n].Name matches the step and if Children[n].Children[n].Name matches step.
 
 1. Then when step is selected for:
   a. For each task in task ID store for given project pull entire task log and save in store list as above which will also be in historicval order anyway
