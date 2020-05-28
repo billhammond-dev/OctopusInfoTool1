@@ -184,6 +184,19 @@ export default {
         console.log(error)
       }
     },
+    getStepFromTask (taskDetailLogs, step) {
+      let ActivityLog
+      for (ActivityLog of taskDetailLogs) {
+        // if ActivityLog.Name starts with 'Step' and also matches our step var
+        if (ActivityLog.Name.startsWith('Step') && ActivityLog.Name.includes(step)) {
+          // if The NON step: portion of the name (our step var) does not occur in any section under ActivityLog.Children stringified 
+          // then we can assume that the top level Name corresponds to the actual step task history and pull it
+          // else we can assume that we need to loop over children and .children to find the Step match instead and pull the time/status etc out of there
+        } else {
+          continue
+        }
+      }
+    },
     async getStepHistory () {
       // idea here is to use the store of tasks and grab all details needed from each task detail output and create a line with it
       const stepTasks = []
@@ -192,7 +205,7 @@ export default {
         const stepLine = []
         const taskId = taskLine[0]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
-        
+        this.getStepFromTask(taskDetail.ActivityLogs, this.selectedStep)
         console.log(stepTasks)
         console.log(stepLine)
         console.log(taskDetail)
