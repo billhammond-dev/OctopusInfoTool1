@@ -2,7 +2,8 @@ export const state = () => ({
   responseCode: '',
   allProjects: [],
   projectSteps: [],
-  projectTasks: []
+  projectTasks: [],
+  stepHistory: []
 })
 
 export const mutations = {
@@ -17,5 +18,11 @@ export const mutations = {
   },
   SET_TASKS (state, tasks) {
     state.projectTasks = tasks
+  },
+  SET_STEPHISTORY (state, lines) {
+    state.stepHistory = lines
+  },
+  ADD_STEPHISTORY (state, line) {
+    state.stepHistory.push(line)
   }
 }

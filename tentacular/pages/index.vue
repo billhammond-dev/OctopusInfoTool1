@@ -34,13 +34,13 @@
       </span>
     </div>
     <div class="selector">
-      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" class="dropdown" >
+      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" @change="getStepHistory" class="dropdown" >
         <option>Release Step:</option>
         <option
           v-for="(item,key) in $store.state.data.projectSteps"
           :key="key"
           :value="item">
-          {{item}}
+          {{item[0]}}{{item[1]}} - {{item[2]}}
         </option>
       </select>
       <span v-else class="dropdown">
@@ -67,7 +67,7 @@ export default {
       apiKey: '',
       sslCheck: true,
       selectedProject: 'Select A Project:',
-      selectedStep: 'Release Step:',
+      selectedStep: ['', '', 'Release Step:'],
       displayData: { test: 'test1output', test2: 'test2output' }
     }
   },
@@ -76,7 +76,7 @@ export default {
       if (this.selectedStep === 'Release Step:') {
         return this.$store.state.data.projectTasks
       } else {
-        return 'No task data yet'
+        return this.$store.state.data.stepHistory
       }
     }
   },
@@ -85,6 +85,7 @@ export default {
     this.$store.commit('data/SET_CODE', '')
     this.$store.commit('data/SET_PROJECTS', undefined)
     this.$store.commit('data/SET_STEPS', undefined)
+    this.$store.commit('data/SET_STEPHISTORY', [])
   },
   methods: {
     async getData (apiEndpoint) {
@@ -171,9 +172,9 @@ export default {
           for (action of step.Actions) {
             if (step.Actions.length > 1) {
               substepNum++
-              stepList.push(stepNum + '.' + substepNum + ' - ' + action.Name)
+              stepList.push([stepNum, '.' + substepNum, action.Name])
             } else {
-              stepList.push(stepNum + ' - ' + action.Name)
+              stepList.push([stepNum, '', action.Name])
             }
           }
         }
@@ -184,31 +185,41 @@ export default {
         console.log(error)
       }
     },
-    getStepFromTask (taskDetailLogs, step) {
+    getStepFromTask (taskDetailLogs, stepName, pattern) {
       let ActivityLog
       for (ActivityLog of taskDetailLogs) {
-        // if ActivityLog.Name starts with 'Step' and also matches our step var
-        if (ActivityLog.Name.startsWith('Step') && ActivityLog.Name.includes(step)) {
-          // if The NON step: portion of the name (our step var) does not occur in any section under ActivityLog.Children stringified 
-          // then we can assume that the top level Name corresponds to the actual step task history and pull it
-          // else we can assume that we need to loop over children and .children to find the Step match instead and pull the time/status etc out of there
+        // console.log('inside ActivityLog Loop for', ActivityLog.Name, pattern[0], pattern[1])
+        // console.log(JSON.stringify(ActivityLog))
+        if (pattern.some(el => JSON.stringify(ActivityLog).includes(el))) {
+          // so what we do here is look for an occurence of the patterns within the entire item first
+          // then if found we see if the pattern also occurs in children, if so then we dont want this level of data and we call this recursively
+          // if not found in children then this must be where the data is and we push it into the store
+          if (pattern.some(el => JSON.stringify(ActivityLog.Children).includes(el))) {
+            this.getStepFromTask(ActivityLog.Children, stepName, pattern)
+          } else {
+            // console.log('Committing Stuff to Task History', ActivityLog.Id, ActivityLog.Name, ActivityLog.Status, ActivityLog.Ended)
+            const pushLine = [ActivityLog.Id, stepName, ActivityLog.Status, ActivityLog.Ended]
+            this.$store.commit('data/ADD_STEPHISTORY', pushLine)
+          }
         } else {
+          // console.log('First IF statement missed, moving on')
           continue
         }
       }
     },
     async getStepHistory () {
       // idea here is to use the store of tasks and grab all details needed from each task detail output and create a line with it
-      const stepTasks = []
+      const stepNum = this.selectedStep[0]
+      const stepName = this.selectedStep[2]
+      const pattern1 = '"Name":"Step ' + stepNum + ': ' + stepName + '"'
+      const pattern2 = '"Name":"' + stepName + '"'
+      const pattern = [pattern1, pattern2]
+      this.$store.commit('data/SET_STEPHISTORY', [])
       let taskLine
       for (taskLine of this.$store.state.data.projectTasks) {
-        const stepLine = []
         const taskId = taskLine[0]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
-        this.getStepFromTask(taskDetail.ActivityLogs, this.selectedStep)
-        console.log(stepTasks)
-        console.log(stepLine)
-        console.log(taskDetail)
+        this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern)
       }
     }
   }
