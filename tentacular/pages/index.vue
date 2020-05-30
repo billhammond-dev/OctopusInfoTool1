@@ -216,12 +216,12 @@ export default {
             }
           }
         }
-        this.showStepSelector = true
         this.$store.commit('data/SET_STEPS', stepList)
         await this.getTasks()
       } catch (error) {
         console.log(error)
       }
+      this.showStepSelector = true
       this.showSpinner = false
     },
     getStepFromTask (taskDetailLogs, stepName, pattern, depId) {
@@ -240,6 +240,7 @@ export default {
               this.$store.state.data.projectDeployments[depId].DeployedBy,
               this.$store.state.data.projectDeployments[depId].Name,
               ActivityLog.Status,
+              stepName,
               this.$store.state.data.projectDeployments[depId].ReleaseNotes
             ]
             console.log(pushLine, depId, this.$store.state.data.projectDeployments[depId].Version)
@@ -258,7 +259,7 @@ export default {
       const pattern1 = '"Name":"Step ' + stepNum + ': ' + stepName + '"'
       const pattern2 = '"Name":"' + stepName + '"'
       const pattern = [pattern1, pattern2]
-      this.$store.commit('data/SET_STEPHISTORY', [['Deployment Time', 'Release Version', 'Deployed By', 'Deployment Name', 'Status', 'Release Notes']])
+      this.$store.commit('data/SET_STEPHISTORY', [['Deployment Time', 'Release Version', 'Deployed By', 'Deployment Name', 'Status', 'StepName', 'Release Notes']])
       let taskLine
       for (taskLine of this.$store.state.data.projectTasks) {
         const taskId = taskLine[0]
@@ -417,7 +418,6 @@ export default {
 
 .dvpane {
   margin: 1rem;
-  padding: .5rem;
   flex: 1;
   overflow: hidden;
   overflow-y: auto;
