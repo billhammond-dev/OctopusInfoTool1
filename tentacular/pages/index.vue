@@ -20,7 +20,7 @@
   </div>
   <div class="selection_area">
     <div class="selector">
-      <select v-if="$store.state.data.allProjects" v-model="selectedProject" @change="getProjectSteps" class="dropdown">
+      <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown">
         <option>Select A Project:</option>
         <option
           v-for="(item,key) in $store.state.data.allProjects"
@@ -29,12 +29,9 @@
           {{item.Name}}
         </option>
       </select>
-      <span v-else @click="getProjects" class="dropdown">
-        Select A Project:
-      </span>
     </div>
     <div class="selector">
-      <select v-if="selectedProject != 'Select A Project:'" v-model="selectedStep" @change="getStepHistory" class="dropdown" >
+      <select v-if="showStepSelector" v-model="selectedStep" @change="getStepHistory" class="dropdown" >
         <option>Release Step:</option>
         <option
           v-for="(item,key) in $store.state.data.projectSteps"
@@ -43,9 +40,6 @@
           {{item[0]}}{{item[1]}} - {{item[2]}}
         </option>
       </select>
-      <span v-else class="dropdown">
-        Release Step:
-      </span>
     </div>
   </div>
   <div class="dvpane"><DataView :octopusData="taskData" /></div>
@@ -68,13 +62,14 @@ export default {
       sslCheck: true,
       selectedProject: 'Select A Project:',
       selectedStep: ['', '', 'Release Step:'],
-      displayData: { test: 'test1output', test2: 'test2output' }
+      showStepSelector: false,
+      showProjectSelector: false
     }
   },
   computed: {
     taskData () {
       if (this.selectedStep === 'Release Step:') {
-        return this.$store.state.data.projectTasks
+        return [['Waiting For Step Selection...']]
       } else {
         return this.$store.state.data.stepHistory
       }
@@ -117,6 +112,7 @@ export default {
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
       this.getData('api/serverstatus/health')
+      this.getProjects()
     },
     async getDeployments () {
       // so we need this populated for later. Its paginated so we will want to pull it in that way. I could try to pull out pagination into a function later
@@ -146,7 +142,14 @@ export default {
       this.$store.commit('data/SET_DEPLOYMENTS', deployments)
     },
     async getProjects () {
+      this.showStepSelector = false
+      this.showProjectSelector = false
+      this.$store.commit('data/SET_PROJECTS', undefined)
+      this.$store.commit('data/SET_DEPLOYMENTS', undefined)
+      this.$store.commit('data/SET_STEPS', undefined)
+      this.$store.commit('data/SET_STEPHISTORY', [])
       this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
+      this.showProjectSelector = true
     },
     async getTasks () {
       // paginated obv
@@ -187,6 +190,7 @@ export default {
       }
     },
     async getProjectSteps () {
+      this.showStepSelector = false
       try {
         this.getDeployments()
         this.selectedStep = 'Release Step:'
@@ -207,6 +211,7 @@ export default {
             }
           }
         }
+        this.showStepSelector = true
         this.$store.commit('data/SET_STEPS', stepList)
         await this.getTasks()
       } catch (error) {
@@ -221,10 +226,17 @@ export default {
           // then if found we see if the pattern also occurs in children, if so then we dont want this level of data and we call this recursively
           // if not found in children then this must be where the data is and we push it into the store
           if (pattern.some(el => JSON.stringify(ActivityLog.Children).includes(el))) {
-            this.getStepFromTask(ActivityLog.Children, stepName, pattern)
+            this.getStepFromTask(ActivityLog.Children, stepName, pattern, depId)
           } else {
-            const pushLine = [ActivityLog.Ended, stepName]
-            console.log(depId, JSON.stringify(this.$store.state.data.projectDeployments))
+            const pushLine = [
+              ActivityLog.Ended,
+              this.$store.state.data.projectDeployments[depId].Version,
+              this.$store.state.data.projectDeployments[depId].DeployedBy,
+              this.$store.state.data.projectDeployments[depId].Name,
+              ActivityLog.Status,
+              stepName
+            ]
+            console.log(pushLine, depId, this.$store.state.data.projectDeployments[depId].Version)
             this.$store.commit('data/ADD_STEPHISTORY', pushLine)
           }
         } else {
@@ -239,7 +251,7 @@ export default {
       const pattern1 = '"Name":"Step ' + stepNum + ': ' + stepName + '"'
       const pattern2 = '"Name":"' + stepName + '"'
       const pattern = [pattern1, pattern2]
-      this.$store.commit('data/SET_STEPHISTORY', [])
+      this.$store.commit('data/SET_STEPHISTORY', [['Deployment Time', 'Release Version', 'Deployed By', 'Deployment Name', 'Status', 'Step Name']])
       let taskLine
       for (taskLine of this.$store.state.data.projectTasks) {
         const taskId = taskLine[0]
