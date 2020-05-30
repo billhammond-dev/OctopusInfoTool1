@@ -43,7 +43,7 @@ export default {
 <style scoped>
 .pane {
   overflow-wrap: break-word;
-  color: #dcdde1;
+  color: #ffffffc7;
 }
 
 .viewtable {

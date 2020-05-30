@@ -15,7 +15,7 @@
         value="true">
       <label class="sslcheck" for="sslcheck">Verify SSL</label>
       <input class="connect" type="submit" value="connect">
-      <span class="resp_code">Last Response: {{ $store.state.data.responseCode }}</span>
+      <span class="resp_code">Last Response: {{ $store.state.data.responseCode }} - {{ displayUrl }}</span>
     </form>
   </div>
   <div class="selection_area">
@@ -65,7 +65,8 @@ export default {
       selectedStep: ['', '', 'Release Step:'],
       showStepSelector: false,
       showProjectSelector: false,
-      showSpinner: false
+      showSpinner: false,
+      displayUrl: ''
     }
   },
   computed: {
@@ -87,6 +88,7 @@ export default {
   },
   methods: {
     async getData (apiEndpoint) {
+      this.displayUrl = apiEndpoint
       const config = {
         headers: {
           Accept: 'application/json',
@@ -103,12 +105,11 @@ export default {
         } else {
           this.$store.commit('data/SET_CODE', res.data.status)
         }
-        console.log('sent axios request to backend')
-        console.log(config.headers.OctUrl)
         return res.data.data
       } catch (error) {
         this.$store.commit('data/SET_CODE', 'Error')
       }
+      this.displayUrl = ''
     },
     async setUrl (submitEvent) {
       this.showSpinner = true
@@ -320,7 +321,7 @@ export default {
   background: transparent;
   border: none;
   outline: none;
-  color: #dcdde17c;
+  color: #ffffff71;
 }
 
 .url_input_area .sslcheckbox {
@@ -354,7 +355,7 @@ export default {
 
 .resp_code {
   margin-left: 2rem;
-  color: #dcdde167;
+  color: #ffffff71;
 }
 
 .spinner {
