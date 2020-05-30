@@ -84,6 +84,7 @@ export default {
     // later
     this.$store.commit('data/SET_CODE', '')
     this.$store.commit('data/SET_PROJECTS', undefined)
+    this.$store.commit('data/SET_DEPLOYMENTS', undefined)
     this.$store.commit('data/SET_STEPS', undefined)
     this.$store.commit('data/SET_STEPHISTORY', [])
   },
@@ -117,6 +118,33 @@ export default {
       this.apiKey = submitEvent.target.elements.apiKey.value
       this.getData('api/serverstatus/health')
     },
+    async getDeployments () {
+      // so we need this populated for later. Its paginated so we will want to pull it in that way. I could try to pull out pagination into a function later
+      const deployments = {}
+      let getNext = true
+      let pagedUrl = 'api/deployments/?projects=' + this.selectedProject.replace(/\s+/g, '')
+      do {
+        const depListRaw = await this.getData(pagedUrl)
+        let deployment
+        for (deployment of depListRaw.Items) {
+          const depLine = {
+            Version: deployment.Changes[0].Version,
+            DeployedBy: deployment.DeployedBy,
+            Name: deployment.Name,
+            ReleaseNotes: deployment.Changes[0].ReleaseNotes
+          }
+          deployments[deployment.Id] = depLine
+          if (!depListRaw.Links['Page.Next']) {
+            getNext = false
+          } else {
+            pagedUrl = depListRaw.Links['Page.Next']
+          }
+        }
+      }
+      while (getNext === true)
+      console.log(deployments)
+      this.$store.commit('data/SET_DEPLOYMENTS', deployments)
+    },
     async getProjects () {
       this.$store.commit('data/SET_PROJECTS', await this.getData('api/projects/all'))
     },
@@ -127,7 +155,6 @@ export default {
       let pagedUrl = 'api/tasks/?project=' + this.selectedProject.replace(/\s+/g, '')
       do {
         const taskListRaw = await this.getData(pagedUrl)
-        console.log(taskListRaw)
         let task
         for (task of taskListRaw.Items) {
           const taskLine = []
@@ -135,6 +162,7 @@ export default {
           taskLine[1] = task.Description
           taskLine[2] = task.State
           taskLine[3] = task.Completed
+          taskLine[4] = task.Arguments.DeploymentId
           taskList.push(taskLine)
           if (!taskListRaw.Links['Page.Next']) {
             getNext = false
@@ -160,6 +188,7 @@ export default {
     },
     async getProjectSteps () {
       try {
+        this.getDeployments()
         this.selectedStep = 'Release Step:'
         const depDetails = await this.getLastProjectDeployment()
         const stepList = []
@@ -178,18 +207,15 @@ export default {
             }
           }
         }
-        console.log(stepList)
         this.$store.commit('data/SET_STEPS', stepList)
         await this.getTasks()
       } catch (error) {
         console.log(error)
       }
     },
-    getStepFromTask (taskDetailLogs, stepName, pattern) {
+    getStepFromTask (taskDetailLogs, stepName, pattern, depId) {
       let ActivityLog
       for (ActivityLog of taskDetailLogs) {
-        // console.log('inside ActivityLog Loop for', ActivityLog.Name, pattern[0], pattern[1])
-        // console.log(JSON.stringify(ActivityLog))
         if (pattern.some(el => JSON.stringify(ActivityLog).includes(el))) {
           // so what we do here is look for an occurence of the patterns within the entire item first
           // then if found we see if the pattern also occurs in children, if so then we dont want this level of data and we call this recursively
@@ -197,12 +223,11 @@ export default {
           if (pattern.some(el => JSON.stringify(ActivityLog.Children).includes(el))) {
             this.getStepFromTask(ActivityLog.Children, stepName, pattern)
           } else {
-            // console.log('Committing Stuff to Task History', ActivityLog.Id, ActivityLog.Name, ActivityLog.Status, ActivityLog.Ended)
-            const pushLine = [ActivityLog.Id, stepName, ActivityLog.Status, ActivityLog.Ended]
+            const pushLine = [ActivityLog.Ended, stepName]
+            console.log(depId, JSON.stringify(this.$store.state.data.projectDeployments))
             this.$store.commit('data/ADD_STEPHISTORY', pushLine)
           }
         } else {
-          // console.log('First IF statement missed, moving on')
           continue
         }
       }
@@ -218,8 +243,9 @@ export default {
       let taskLine
       for (taskLine of this.$store.state.data.projectTasks) {
         const taskId = taskLine[0]
+        const depId = taskLine[4]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
-        this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern)
+        this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern, depId)
       }
     }
   }
