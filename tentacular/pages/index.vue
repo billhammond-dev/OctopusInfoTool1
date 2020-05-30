@@ -19,6 +19,7 @@
     </form>
   </div>
   <div class="selection_area">
+    <div :style="{visibility: showSpinner ? 'visible' : 'hidden'}" class="spinner"></div>
     <div class="selector">
       <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown">
         <option>Select A Project:</option>
@@ -63,7 +64,8 @@ export default {
       selectedProject: 'Select A Project:',
       selectedStep: ['', '', 'Release Step:'],
       showStepSelector: false,
-      showProjectSelector: false
+      showProjectSelector: false,
+      showSpinner: false
     }
   },
   computed: {
@@ -108,11 +110,13 @@ export default {
         this.$store.commit('data/SET_CODE', 'Error')
       }
     },
-    setUrl (submitEvent) {
+    async setUrl (submitEvent) {
+      this.showSpinner = true
       this.url = submitEvent.target.elements.url.value
       this.apiKey = submitEvent.target.elements.apiKey.value
-      this.getData('api/serverstatus/health')
-      this.getProjects()
+      await this.getData('api/serverstatus/health')
+      await this.getProjects()
+      this.showSpinner = false
     },
     async getDeployments () {
       // so we need this populated for later. Its paginated so we will want to pull it in that way. I could try to pull out pagination into a function later
@@ -190,9 +194,10 @@ export default {
       }
     },
     async getProjectSteps () {
+      this.showSpinner = true
       this.showStepSelector = false
       try {
-        this.getDeployments()
+        await this.getDeployments()
         this.selectedStep = 'Release Step:'
         const depDetails = await this.getLastProjectDeployment()
         const stepList = []
@@ -217,6 +222,7 @@ export default {
       } catch (error) {
         console.log(error)
       }
+      this.showSpinner = false
     },
     getStepFromTask (taskDetailLogs, stepName, pattern, depId) {
       let ActivityLog
@@ -234,7 +240,7 @@ export default {
               this.$store.state.data.projectDeployments[depId].DeployedBy,
               this.$store.state.data.projectDeployments[depId].Name,
               ActivityLog.Status,
-              stepName
+              this.$store.state.data.projectDeployments[depId].ReleaseNotes
             ]
             console.log(pushLine, depId, this.$store.state.data.projectDeployments[depId].Version)
             this.$store.commit('data/ADD_STEPHISTORY', pushLine)
@@ -246,19 +252,21 @@ export default {
     },
     async getStepHistory () {
       // idea here is to use the store of tasks and grab all details needed from each task detail output and create a line with it
+      this.showSpinner = true
       const stepNum = this.selectedStep[0]
       const stepName = this.selectedStep[2]
       const pattern1 = '"Name":"Step ' + stepNum + ': ' + stepName + '"'
       const pattern2 = '"Name":"' + stepName + '"'
       const pattern = [pattern1, pattern2]
-      this.$store.commit('data/SET_STEPHISTORY', [['Deployment Time', 'Release Version', 'Deployed By', 'Deployment Name', 'Status', 'Step Name']])
+      this.$store.commit('data/SET_STEPHISTORY', [['Deployment Time', 'Release Version', 'Deployed By', 'Deployment Name', 'Status', 'Release Notes']])
       let taskLine
       for (taskLine of this.$store.state.data.projectTasks) {
         const taskId = taskLine[0]
         const depId = taskLine[4]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
-        this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern, depId)
+        await this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern, depId)
       }
+      this.showSpinner = false
     }
   }
 
@@ -348,6 +356,37 @@ export default {
   color: #dcdde167;
 }
 
+.spinner {
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.spinner:after {
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  width: 0;
+  height: 0;
+  margin: 2px;
+  box-sizing: border-box;
+  border: 8px solid #fff;
+  border-color: rgb(212, 212, 212) transparent rgb(212, 212, 212) transparent;
+  animation: spinner .8s infinite;
+}
+@keyframes spinner {
+  0% {
+    transform: rotate(0);
+    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  }
+  50% {
+    transform: rotate(900deg);
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  100% {
+    transform: rotate(1800deg);
+  }
+}
 .selection_area {
   padding: 1rem;
   background-color: #273c75;
