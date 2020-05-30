@@ -1,7 +1,12 @@
 <template>
   <div id="appindex">
   <div class="topbar">
-    <h2>Octopus Deploy Step History Tool</h2>
+    <div>
+      <h2>Octopus Deploy Step History Tool</h2>
+    </div>
+    <div class="gitlink">
+      <a href="https://github.com/billhammond-dev/OctopusInfoTool1" target="blank">github</a>
+    </div>
   </div>
   <div class="url_input_area">
     <form @submit.prevent="setUrl">
@@ -295,10 +300,24 @@ export default {
 .topbar {
   background-color: #273c75;
   color: #dcdde1;
-  padding: 1rem;
+  padding: .5rem;
   margin-bottom: 1rem;
   text-align: left;
   border-bottom: 1px solid #dcdde133;
+  display: flex;
+  justify-content: space-between;
+}
+
+.gitlink {
+  width: 10rem;
+  text-align: center;
+  padding-top: .5rem;
+  font-weight: 100;
+  font-size: .75rem;
+}
+
+.gitlink a:link, a:visited {
+  color:rgb(180, 180, 180);
 }
 
 .url_input_area {
