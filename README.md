@@ -11,5 +11,3 @@ Need to containerize/dockerize
 Need to make readme useable with instructions and test/etc
 
 Once operational with instructions need to once over and make public
-
-make stop button glow when pressed
