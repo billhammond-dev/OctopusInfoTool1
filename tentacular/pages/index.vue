@@ -340,6 +340,20 @@ export default {
 .url_input_area {
   padding: 1rem;
 }
+/* Change Autocomplete styles in Chrome - really? why do we still have to do stuff like this */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #dcdde17c;
+  -webkit-box-shadow: 0 0 0px 0px rgba(0, 0, 0, 0) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
 .url_input_area .urlinput {
   font-size: 1.25rem;

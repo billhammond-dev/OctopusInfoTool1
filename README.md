@@ -9,9 +9,6 @@ How to secure connection betwen front and backend?
 
 How to know if a container is secure, i.e. has safe modules?
 
-Figure out how to fix issue with autocomplete selection messing with background
-
 ref: https://github.com/OctopusDeploy/OctopusDeploy-Api/wiki
-
 
 bug where when loading task history you can kill the app by selecting a new project

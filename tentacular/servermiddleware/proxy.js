@@ -13,7 +13,8 @@ export default {
       "api/tasks",
       "api/deployments",
       "api/projects",
-      "api/deploymentprocesses"
+      "api/deploymentprocesses",
+      "api/Spaces"
     ]
     if (!req.headers['octurl'] || !req.headers['x-nuget-apikey']) {
       console.log('missing header')
