@@ -9,7 +9,7 @@ export default {
   path: '/api',
   handler (req, res) {
     const allowedUrls = [
-      "api/serverstatus1",
+      "api/serverstatus",
       "api/tasks",
       "api/deployments",
       "api/projects",
