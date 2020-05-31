@@ -453,8 +453,9 @@ export default {
   background: transparent;
   border: none;
   outline: none;
-  color: #dcdde17c;
+  color: #dcdde1;
   font-size: 1rem;
+  opacity: .75;
 }
 
 .dropdown {

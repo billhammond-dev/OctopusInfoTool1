@@ -1,10 +1,27 @@
 
 import axios from 'axios'
 import https from 'https'
-import { runInNewContext } from 'vm';
+// Here for security reasons we should probably find a way to exit the fn gracefully if somehow the calls to this endpoint arent to an allowed list
+// as this is a proxy for http requests that just does what it is asked
+// so if any headers are missing from req exit
+// if oct url isnt one of alowed then exit
 export default {
   path: '/api',
   handler (req, res) {
+    const allowedUrls = [
+      "api/serverstatus1",
+      "api/tasks",
+      "api/deployments",
+      "api/projects",
+      "api/deploymentprocesses"
+    ]
+    if (!req.headers['octurl'] || !req.headers['x-nuget-apikey']) {
+      console.log('missing header')
+      res.end(JSON.stringify({data: '', status: '403 Forbidden - Header Check Fails Security'}))
+    } else if (allowedUrls.some(el => req.headers['octurl'].includes(el))) {
+      console.log('url not allowed')
+      res.end(JSON.stringify({data: '', status: '403 Forbidden - Url Check Fails Security'}))
+    }
     //const stuff = JSON.stringify(req.headers)
     var verifySSL = (req.headers['verifyssl'] === 'true')
     const agent = new https.Agent({  
