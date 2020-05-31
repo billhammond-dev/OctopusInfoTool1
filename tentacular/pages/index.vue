@@ -25,6 +25,9 @@
   </div>
   <div class="selection_area">
     <div :style="{visibility: showSpinner ? 'visible' : 'hidden'}" class="spinner"></div>
+    <div class="stopbuttondiv" v-if="showProjectSelector">
+      <img class="stopbutton" src='../static/stop.png' @click="stopStuff">
+    </div>
     <div class="selector">
       <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown" :disabled="showSpinner === true">
         <option>Select A Project:</option>
@@ -83,7 +86,8 @@ export default {
       showProjectSelector: false,
       showSpinner: false,
       displayUrl: '',
-      maxRecords: 5
+      maxRecords: 5,
+      stopRunning: false
     }
   },
   computed: {
@@ -107,6 +111,11 @@ export default {
     this.$store.commit('data/SET_STEPHISTORY', [])
   },
   methods: {
+    stopStuff () {
+      if (this.stopRunning === false) {
+        this.stopRunning = true
+      }
+    },
     async getData (apiEndpoint) {
       this.displayUrl = apiEndpoint
       const config = {
@@ -162,7 +171,8 @@ export default {
           }
         }
       }
-      while (getNext === true)
+      while (getNext === true && this.stopRunning === false)
+      this.stopRunning = false
       this.$store.commit('data/SET_DEPLOYMENTS', deployments)
     },
     async getProjects () {
@@ -198,7 +208,8 @@ export default {
           }
         }
       }
-      while (getNext === true)
+      while (getNext === true && this.stopRunning === false)
+      this.stopRunning = false
       this.$store.commit('data/SET_TASKS', taskList)
       // console.log(this.$store.state.data.projectTasks)
     },
@@ -286,7 +297,8 @@ export default {
         const depId = taskLine[4]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
         await this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern, depId)
-        if (this.$store.state.data.stepHistory.length >= this.recMax + 1) {
+        if (this.$store.state.data.stepHistory.length >= this.recMax + 1 || this.stopRunning === true) {
+          this.stopRunning = false
           break
         }
       }
@@ -452,7 +464,16 @@ select:-webkit-autofill:focus {
 
 .selector {
   width: 10rem;
-  margin-left: 10rem;
+  margin-left: 8rem;
+}
+
+.stopbuttondiv {
+  margin-left: 1rem;
+}
+
+.stopbutton {
+  width: 1.5rem;
+  filter: invert(60%);
 }
 
 .maxRecords {
