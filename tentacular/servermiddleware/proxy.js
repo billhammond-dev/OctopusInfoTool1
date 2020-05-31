@@ -18,7 +18,7 @@ export default {
     if (!req.headers['octurl'] || !req.headers['x-nuget-apikey']) {
       console.log('missing header')
       res.end(JSON.stringify({data: '', status: '403 Forbidden - Header Check Fails Security'}))
-    } else if (allowedUrls.some(el => req.headers['octurl'].includes(el))) {
+    } else if (!allowedUrls.some(el => req.headers['octurl'].includes(el))) {
       console.log('url not allowed')
       res.end(JSON.stringify({data: '', status: '403 Forbidden - Url Check Fails Security'}))
     }
