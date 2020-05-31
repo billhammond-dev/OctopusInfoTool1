@@ -47,6 +47,17 @@
         </option>
       </select>
     </div>
+    <div class="maxRecords" v-if="showStepSelector">
+      <label for="maxRecords">Max Results</label>
+      <input
+        type="number"
+        v-model="maxRecords"
+        id="maxRecords"
+        min="1"
+        max="50"
+        placeholder="5"
+        default="5">
+    </div>
   </div>
   <div class="dvpane"><DataView :octopusData="taskData" /></div>
   </div>
@@ -71,7 +82,8 @@ export default {
       showStepSelector: false,
       showProjectSelector: false,
       showSpinner: false,
-      displayUrl: ''
+      displayUrl: '',
+      maxRecords: 5
     }
   },
   computed: {
@@ -81,6 +93,9 @@ export default {
       } else {
         return this.$store.state.data.stepHistory
       }
+    },
+    recMax () {
+      return parseInt(this.maxRecords)
     }
   },
   created () {
@@ -148,7 +163,6 @@ export default {
         }
       }
       while (getNext === true)
-      console.log(deployments)
       this.$store.commit('data/SET_DEPLOYMENTS', deployments)
     },
     async getProjects () {
@@ -192,7 +206,7 @@ export default {
       try {
         // gets latest deployment process from a project
         // regex to get rid a a bug where spaces cause an issue
-        const lastDep = await this.getData('api/deployments?projects=' + this.selectedProject.replace(/\s+/g, ''))
+        const lastDep = await this.getData('api/deployments?projects=' + this.selectedProject.replace(/\s+/g, '') + '&take=1')
         const depDetails = await this.getData('api/deploymentprocesses/' + lastDep.Items[0].DeploymentProcessId)
         return depDetails
       } catch (error) {
@@ -249,7 +263,7 @@ export default {
               stepName,
               this.$store.state.data.projectDeployments[depId].ReleaseNotes
             ]
-            console.log(pushLine, depId, this.$store.state.data.projectDeployments[depId].Version)
+            // console.log(pushLine, depId, this.$store.state.data.projectDeployments[depId].Version)
             this.$store.commit('data/ADD_STEPHISTORY', pushLine)
           }
         } else {
@@ -272,6 +286,9 @@ export default {
         const depId = taskLine[4]
         const taskDetail = await this.getData('api/tasks/' + taskId + '/details')
         await this.getStepFromTask(taskDetail.ActivityLogs, stepName, pattern, depId)
+        if (this.$store.state.data.stepHistory.length >= this.recMax + 1) {
+          break
+        }
       }
       this.showSpinner = false
     }
@@ -423,6 +440,23 @@ export default {
   width: 10rem;
   margin-left: 10rem;
 }
+
+.maxRecords {
+  margin-left: 20rem;
+  width: 15rem;
+  font-size: 1rem;
+  background: transparent;
+  color: #dcdde17c;
+}
+
+.maxRecords input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #dcdde17c;
+  font-size: 1rem;
+}
+
 .dropdown {
   font-size: 1.25rem;
   background: transparent;
