@@ -25,7 +25,7 @@
   </div>
   <div class="selection_area">
     <div :style="{visibility: showSpinner ? 'visible' : 'hidden'}" class="spinner"></div>
-    <div class="stopbuttondiv" v-if="showProjectSelector">
+    <div :style="{visibility: showSpinner ? 'visible' : 'hidden'}" class="stopbuttondiv" v-if="showProjectSelector">
       <img class="stopbutton" src='../static/stop.png' @click="stopStuff">
     </div>
     <div class="selector">
@@ -57,7 +57,7 @@
         v-model="maxRecords"
         id="maxRecords"
         min="1"
-        max="50"
+        max="500"
         placeholder="5"
         default="5">
     </div>
@@ -425,6 +425,7 @@ select:-webkit-autofill:focus {
   position: relative;
   width: 20px;
   height: 20px;
+  transition: .2s;
 }
 .spinner:after {
   content: " ";
@@ -474,6 +475,12 @@ select:-webkit-autofill:focus {
 .stopbutton {
   width: 1.5rem;
   filter: invert(60%);
+  transition: .2s;
+}
+
+.stopbutton:active {
+  filter: invert(0%);
+  transition: 0s;
 }
 
 .maxRecords {
