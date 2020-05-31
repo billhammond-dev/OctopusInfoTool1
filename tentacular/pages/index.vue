@@ -26,7 +26,7 @@
   <div class="selection_area">
     <div :style="{visibility: showSpinner ? 'visible' : 'hidden'}" class="spinner"></div>
     <div class="selector">
-      <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown">
+      <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown" :disabled="showSpinner === true">
         <option>Select A Project:</option>
         <option
           v-for="(item,key) in $store.state.data.allProjects"
@@ -37,7 +37,7 @@
       </select>
     </div>
     <div class="selector">
-      <select v-if="showStepSelector" v-model="selectedStep" @change="getStepHistory" class="dropdown" >
+      <select v-if="showStepSelector" v-model="selectedStep" @change="getStepHistory" class="dropdown" :disabled="showSpinner === true">
         <option>Release Step:</option>
         <option
           v-for="(item,key) in $store.state.data.projectSteps"
