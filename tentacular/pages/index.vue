@@ -30,7 +30,7 @@
     </div>
     <div class="selector">
       <select v-if="showProjectSelector" v-model="selectedProject" @change="getProjectSteps" class="dropdown" :disabled="showSpinner === true">
-        <option>Select A Project:</option>
+        <option>Click To Select A Project</option>
         <option
           v-for="(item,key) in $store.state.data.allProjects"
           :key="key"
@@ -80,7 +80,7 @@ export default {
       url: '',
       apiKey: '',
       sslCheck: true,
-      selectedProject: 'Select A Project:',
+      selectedProject: 'Click To Select A Project',
       selectedStep: ['', '', 'Release Step:'],
       showStepSelector: false,
       showProjectSelector: false,
@@ -156,12 +156,22 @@ export default {
       do {
         const depListRaw = await this.getData(pagedUrl)
         let deployment
+        let depLine
         for (deployment of depListRaw.Items) {
-          const depLine = {
-            Version: deployment.Changes[0].Version,
-            DeployedBy: deployment.DeployedBy,
-            Name: deployment.Name,
-            ReleaseNotes: deployment.Changes[0].ReleaseNotes
+          if (deployment.Changes.length === 0) {
+            depLine = {
+              Version: null,
+              DeployedBy: deployment.DeployedBy,
+              Name: deployment.Name,
+              ReleaseNotes: null
+            }
+          } else {
+            depLine = {
+              Version: deployment.Changes[0].Version,
+              DeployedBy: deployment.DeployedBy,
+              Name: deployment.Name,
+              ReleaseNotes: deployment.Changes[0].ReleaseNotes
+            }
           }
           deployments[deployment.Id] = depLine
           if (!depListRaw.Links['Page.Next']) {
@@ -178,6 +188,7 @@ export default {
     async getProjects () {
       this.showStepSelector = false
       this.showProjectSelector = false
+      this.selectedProject = 'Click To Select A Project'
       this.$store.commit('data/SET_PROJECTS', undefined)
       this.$store.commit('data/SET_DEPLOYMENTS', undefined)
       this.$store.commit('data/SET_STEPS', undefined)
@@ -227,6 +238,7 @@ export default {
     async getProjectSteps () {
       this.showSpinner = true
       this.showStepSelector = false
+      this.$store.commit('data/SET_STEPHISTORY', [])
       try {
         await this.getDeployments()
         this.selectedStep = 'Release Step:'
@@ -247,10 +259,14 @@ export default {
             }
           }
         }
+        console.log(stepList)
         this.$store.commit('data/SET_STEPS', stepList)
         await this.getTasks()
       } catch (error) {
+        console.log('In getProjectSteps')
         console.log(error)
+        this.$store.commit('data/SET_DEPLOYMENTS', undefined)
+        this.$store.commit('data/SET_STEPS', undefined)
       }
       this.showStepSelector = true
       this.showSpinner = false
@@ -464,7 +480,7 @@ select:-webkit-autofill:focus {
 }
 
 .selector {
-  width: 10rem;
+  width: 12rem;
   margin-left: 8rem;
 }
 
@@ -484,7 +500,7 @@ select:-webkit-autofill:focus {
 }
 
 .maxRecords {
-  margin-left: 20rem;
+  margin-left: 25rem;
   width: 15rem;
   font-size: 1rem;
   background: transparent;
@@ -501,12 +517,17 @@ select:-webkit-autofill:focus {
 }
 
 .dropdown {
-  font-size: 1.25rem;
+  font-size: 1rem;
   background: transparent;
   border: none;
   outline: none;
   width: auto;
   color: #dcdde17c;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
 }
 
 .dropdown option {
