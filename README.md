@@ -12,8 +12,9 @@ Need to make readme useable with instructions and test/etc
 
 Once operational with instructions need to once over and make public
 
-Need to move Maxrecords wayy over to the right
+skipped steps should be removed from the listing on history
 
-Need to get rid of dropdown arrows and somehow have them as background images instead
+Add a month lookback instead of num of records
 
-Maybe dropdows can be fixed size instead and wrap text inside?? Not sure
+Work on a base-components repo project also and in there develop a better dropdown
+
