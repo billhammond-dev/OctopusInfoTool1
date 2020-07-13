@@ -3,8 +3,8 @@
 Web Application with front and back end components, written in VueJs, Node, Html/Css
 
 This was built to solve a recurring issue I kept having with deployment tickets where I would need to know exactly when
-a particular step of an Octopus release had been deployed last, in an environment where the full stacks were almost never
-deployed in full, and cloud resources were generally always deployed by releasing a single deployment step.
+a particular step of an Octopus release had been deployed last, in an environment where the full releases were almost never
+deployed at once, and cloud resources were generally always deployed by releasing a single deployment step.
 
 It turns out that the data available from the Octopus API is structured in a way that makes it very difficult to obtain this information.
 
