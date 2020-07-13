@@ -2,6 +2,8 @@
 
 Web Application with front and back end components, written in VueJs, Node, Html/Css
 
+![Example Of Working Deployment](tentacular/static/octopustool.PNG?raw=true "Octopus Deploy Step History Tool")
+
 This was built to solve a recurring issue I kept having with deployment tickets where I would need to know exactly when
 a particular step of an Octopus release had been deployed last, in an environment where the full releases were almost never
 deployed at once, and cloud resources were generally always deployed by releasing a single deployment step.
