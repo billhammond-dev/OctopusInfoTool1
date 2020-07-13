@@ -17,5 +17,5 @@ web browser and backend proxy code is not yet secure.
 
 How to run:
 
- - Install 'LTS' version of node with extra tools https://nodejs.org/en/download/
+ - Install 'LTS' version of node with chocolately https://nodejs.org/en/download/
  - 
