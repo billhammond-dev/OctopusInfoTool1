@@ -11,7 +11,7 @@ deployed at once, and cloud resources were generally always deployed by releasin
 It turns out that the data available from the Octopus API is structured in a way that makes it very difficult to obtain this information.
 
 In addition a default Octopus installation on a windows server (which is the most common currently) is always going to be
-restrcited by CORS settings so I wanted to make this generically useable by anyone without changing those settings.
+restricted by CORS settings so I wanted to make this generically useable by anyone without changing those settings.
 The backend components accomplish this CORS bypass by acting as a request proxy for all the requests to the Octopus server.
 
 This was designed to run locally as a personal tool, and for security reasons you shouldnt run this anywhere else at this time as the connection between the
@@ -20,7 +20,8 @@ web browser and backend proxy code is not yet secure.
 How to run:
 
  - Install 'LTS' version of node with chocolately https://nodejs.org/en/download/
- - Clone this repo
+ - On some machines the chocolately install may fail, but you can install it directly from their website as well. https://chocolatey.org/install
+ - Clone this repo with git into a folder on your local machine
  - install nuxt 'npm install nuxt'
  - cd to 'tentacular' folder in cloned repo
  - 'npm run dev' to start server on port 3000 of local machine
@@ -28,5 +29,5 @@ How to run:
  - Add an API key to your octopus user account https://octopus.com/docs/octopus-rest-api/how-to-create-an-api-key
  - set the connection settings in the web page and 'connect'. You should get a 'Last Response: 200 OK - api/projects/all' response. If not you may have to test ssl options/etc and your api key until the connection portion works.
  - Select a Project and then a release step and the application will pull all the data needed to create the results table.
- - On larger, multiuser Octopus systems pulling the task history data may take a while, and there is a 'stop' button to cancel in-flight requests and go with whatever data you have already pulled into the application.
+ - On larger, multiuser Octopus systems pulling the project and task history data may take a while, and there is a 'stop' button to cancel in-flight requests and go with whatever data you have already pulled into the application.
  
