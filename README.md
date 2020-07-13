@@ -1,20 +1,21 @@
-# OctopusInfoTool1
-TODO:
-How to secure connection betwen front and backend?
+# Octopus Release Step History Tool
 
-How to know if a container is secure, i.e. has safe modules?
+Web Application with front and back end components, written in VueJs, Node, Html/Css
 
-ref: https://github.com/OctopusDeploy/OctopusDeploy-Api/wiki
+This was built to solve a recurring issue I kept having with deployment tickets where I would need to know exactly when
+a particular step of an Octopus release had been deployed last, in an environment where the full stacks were almost never
+deployed in full, and cloud resources were generally always deployed by releasing a single deployment step.
 
-Need to containerize/dockerize
+It turns out that the data available from the Octopus API is structured in a way that makes it very difficult to obtain this information.
 
-Need to make readme useable with instructions and test/etc
+In addition a default Octopus installation on a windows server (which is the most common currently) is always going to be
+restrcited by CORS settings so I wanted to make this generically useable by anyone without changing those settings.
+The backend components accomplish this CORS bypass by acting as a request proxy for all the requests to the Octopus server.
 
-Once operational with instructions need to once over and make public
+This was designed to run locally as a personal tool, and for security reasons you shouldnt run this anywhere else at this time as the connection between the
+web browser and backend proxy code is not yet secure.
 
-skipped steps should be removed from the listing on history
+How to run:
 
-Add a month lookback instead of num of records
-
-Work on a base-components repo project also and in there develop a better dropdown
-
+ - Install latest version of node https://nodejs.org/en/download/
+ - 
