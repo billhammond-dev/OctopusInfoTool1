@@ -18,4 +18,13 @@ web browser and backend proxy code is not yet secure.
 How to run:
 
  - Install 'LTS' version of node with chocolately https://nodejs.org/en/download/
- - 
+ - Clone this repo
+ - install nuxt 'npm install nuxt'
+ - cd to 'tentacular' folder in cloned repo
+ - 'npm run dev' to start server on port 3000 of local machine
+ - browse to http://localhost:3000/
+ - Add an API key to your octopus user account https://octopus.com/docs/octopus-rest-api/how-to-create-an-api-key
+ - set the connection settings in the web page and 'connect'. You should get a 'Last Response: 200 OK - api/projects/all' response. If not you may have to test ssl options/etc and your api key until the connection portion works.
+ - Select a Project and then a release step and the application will pull all the data needed to create the results table.
+ - On larger, multiuser Octopus systems pulling the task history data may take a while, and there is a 'stop' button to cancel in-flight requests and go with whatever data you have already pulled into the application.
+ 
