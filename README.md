@@ -17,5 +17,5 @@ web browser and backend proxy code is not yet secure.
 
 How to run:
 
- - Install latest version of node https://nodejs.org/en/download/
+ - Install 'LTS' version of node with extra tools https://nodejs.org/en/download/
  - 
